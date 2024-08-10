@@ -1,0 +1,42 @@
+@startuml use-case
+
+skinparam backgroundColor #F9F9F9
+skinparam usecase {
+    BackgroundColor #ADD8E6
+    BorderColor #000000
+    FontColor #000000
+    FontStyle bold
+}
+skinparam actor {
+    BackgroundColor #FFE4B5
+    BorderColor #000000
+    FontColor #000000
+    FontStyle bold
+}
+
+actor "Pet Owner" as PetOwner
+actor "🏠 Shelter/Organization" as Organization
+
+rectangle "Common Functions" {
+    usecase "Register\nAccount" as UC1
+    usecase "Add Pet" as UC2
+    usecase "View Pet\nHealth Records" as UC3
+    usecase "Schedule\nAppointment" as UC4
+}
+
+rectangle "Shelter-Specific Functions" {
+    usecase "Mass Add Pets" as UC5
+}
+
+PetOwner --> UC1 : "Registers"
+PetOwner --> UC2 : "Adds Pet"
+PetOwner --> UC3 : "Views Health Records"
+PetOwner --> UC4 : "Schedules Appointment"
+
+Organization --> UC1 : "Registers"
+Organization --> UC2 : "Adds Pet"
+Organization --> UC3 : "Views Health Records"
+Organization --> UC4 : "Schedules Appointment"
+Organization --> UC5 : "Mass Adds Pets"
+
+@enduml

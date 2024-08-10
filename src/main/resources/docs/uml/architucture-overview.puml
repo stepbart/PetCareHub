@@ -1,0 +1,215 @@
+@startuml architecture-overview
+allowmixing
+
+' Style settings
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+' Color definitions
+!define ENTITY_COLOR #FFECB3
+!define SERVICE_COLOR #BBDEFB
+!define REPOSITORY_COLOR #C8E6C9
+!define CONTROLLER_COLOR #FFE0B2
+!define ADAPTER_COLOR #D1C4E9
+!define EXTERNAL_SYSTEM_COLOR #CFD8DC
+!define DATABASE_COLOR #B0BEC5
+
+' Core package
+package "Core" as Core <<Frame>> {
+    package "Entities" <<Rectangle>> {
+        class User << (E,ENTITY_COLOR) Entity >> {
+            - Long id
+            - String name
+            - String email
+        }
+
+        class Pet << (E,ENTITY_COLOR) Entity >> {
+            - Long id
+            - String name
+            - String type
+        }
+
+        class HealthRecord << (E,ENTITY_COLOR) Entity >> {
+            - Long id
+            - Date date
+            - String notes
+        }
+    }
+
+    package "Ports" <<Rectangle>> {
+        interface UserServicePort << (S,SERVICE_COLOR) >> {
+            {abstract}
+            + registerUser(UserDTO userDTO)
+            + getUserById(Long id)
+        }
+        interface PetServicePort << (S,SERVICE_COLOR) >> {
+            {abstract}
+            + addPet(PetDTO petDTO)
+            + getPetById(Long id)
+        }
+        interface HealthServicePort << (S,SERVICE_COLOR) >> {
+            {abstract}
+            + addHealthRecord(HealthRecordDTO healthDTO)
+            + getHealthRecordsByPetId(Long petId)
+        }
+
+        interface UserRepositoryPort << (R,REPOSITORY_COLOR) >> {
+            {abstract}
+            + save(User user)
+            + findById(Long id): User
+        }
+        interface PetRepositoryPort << (R,REPOSITORY_COLOR) >> {
+            {abstract}
+            + save(Pet pet)
+            + findById(Long id): Pet
+        }
+        interface HealthRecordRepositoryPort << (R,REPOSITORY_COLOR) >> {
+            {abstract}
+            + save(HealthRecord record)
+            + findByPetId(Long petId): List<HealthRecord>
+        }
+    }
+}
+
+' Application package
+package "Application" as Application <<Frame>> {
+    class UserServiceImpl << (S,SERVICE_COLOR) Service >> {
+        - UserRepositoryPort userRepo
+        - UserMapper userMapper
+        + registerUser(UserDTO userDTO)
+        + getUserById(Long id)
+    }
+
+    class PetServiceImpl << (S,SERVICE_COLOR) Service >> {
+        - PetRepositoryPort petRepo
+        - PetMapper petMapper
+        + addPet(PetDTO petDTO)
+        + getPetById(Long id)
+    }
+
+    class HealthServiceImpl << (S,SERVICE_COLOR) Service >> {
+        - HealthRecordRepositoryPort healthRepo
+        - HealthMapper healthMapper
+        + addHealthRecord(HealthRecordDTO healthDTO)
+        + getHealthRecordsByPetId(Long petId)
+    }
+
+    class UserMapper << (M,white) Mapper >> {
+        + toDTO(User user): UserDTO
+        + toEntity(UserDTO userDTO): User
+    }
+
+    class PetMapper << (M,white) Mapper >> {
+        + toDTO(Pet pet): PetDTO
+        + toEntity(PetDTO petDTO): Pet
+    }
+
+    class HealthMapper << (M,white) Mapper >> {
+        + toDTO(HealthRecord record): HealthRecordDTO
+        + toEntity(HealthRecordDTO dto): HealthRecord
+    }
+
+    class UserDTO << (D,white) DTO >> {
+        + Long id
+        + String name
+        + String email
+    }
+    class PetDTO << (D,white) DTO >> {
+        + Long id
+        + String name
+        + String type
+    }
+    class HealthRecordDTO << (D,white) DTO >> {
+        + Long id
+        + Date date
+        + String notes
+    }
+}
+
+' Infrastructure package
+package "Infrastructure" as Infrastructure <<Frame>> {
+    class UserRepositoryImpl << (R,REPOSITORY_COLOR) Repository >> {
+        - EntityManager em
+        + save(User user)
+        + findById(Long id): User
+    }
+
+    class PetRepositoryImpl << (R,REPOSITORY_COLOR) Repository >> {
+        - EntityManager em
+        + save(Pet pet)
+        + findById(Long id): Pet
+    }
+
+    class HealthRecordRepositoryImpl << (R,REPOSITORY_COLOR) Repository >> {
+        - EntityManager em
+        + save(HealthRecord record)
+        + findByPetId(Long petId): List<HealthRecord>
+    }
+
+    class TwilioAdapter << (A,ADAPTER_COLOR) Adapter >> {
+        + sendSMS(String number, String message)
+    }
+
+    class GoogleMapsAdapter << (A,ADAPTER_COLOR) Adapter >> {
+        + getLocation(String address): Coordinates
+    }
+}
+
+' Web package
+package "Web" as Web <<Frame>> {
+    class UserController << (C,CONTROLLER_COLOR) Controller >> {
+        - UserServicePort userService
+        + registerUser(UserDTO userDTO)
+        + getUser(Long id)
+    }
+
+    class PetController << (C,CONTROLLER_COLOR) Controller >> {
+        - PetServicePort petService
+        + addPet(PetDTO petDTO)
+        + getPet(Long id)
+    }
+
+    class HealthController << (C,CONTROLLER_COLOR) Controller >> {
+        - HealthServicePort healthService
+        + addHealthRecord(HealthRecordDTO healthDTO)
+        + getHealthRecords(Long petId)
+    }
+}
+
+' External systems
+package "External Systems" <<Rectangle>> {
+    component "Twilio API" << (X,EXTERNAL_SYSTEM_COLOR) >>
+    component "Google Maps API" << (X,EXTERNAL_SYSTEM_COLOR) >>
+}
+
+' Database
+database "MySQL Database" << (D,DATABASE_COLOR) >>
+
+' Relationships between components
+UserController --> UserServiceImpl : "uses"
+PetController --> PetServiceImpl : "uses"
+HealthController --> HealthServiceImpl : "uses"
+
+UserServiceImpl ..> UserRepositoryPort : "implements"
+PetServiceImpl ..> PetRepositoryPort : "implements"
+HealthServiceImpl ..> HealthRecordRepositoryPort : "implements"
+
+UserRepositoryImpl ..|> UserRepositoryPort
+PetRepositoryImpl ..|> PetRepositoryPort
+HealthRecordRepositoryImpl ..|> HealthRecordRepositoryPort
+
+UserServiceImpl --> UserMapper
+PetServiceImpl --> PetMapper
+HealthServiceImpl --> HealthMapper
+
+UserRepositoryImpl --> "MySQL Database"
+PetRepositoryImpl --> "MySQL Database"
+HealthRecordRepositoryImpl --> "MySQL Database"
+
+HealthServiceImpl --> TwilioAdapter : "sends SMS via"
+UserServiceImpl --> GoogleMapsAdapter : "fetches location via"
+
+TwilioAdapter --> "Twilio API"
+GoogleMapsAdapter --> "Google Maps API"
+
+@enduml

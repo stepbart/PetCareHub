@@ -11,12 +11,13 @@ skinparam shadowing false
 !define REPOSITORY_COLOR #C8E6C9
 !define CONTROLLER_COLOR #FFE0B2
 !define ADAPTER_COLOR #D1C4E9
+!define CONFIG_COLOR #F8BBD0
 !define EXTERNAL_SYSTEM_COLOR #CFD8DC
 !define DATABASE_COLOR #B0BEC5
 
 ' Core package
 package "Core" as Core <<Frame>> {
-    package "Entities" <<Rectangle>> {
+    package "Domain" <<Rectangle>> {
         class User << (E,ENTITY_COLOR) Entity >> {
             - Long id
             - String name
@@ -37,36 +38,40 @@ package "Core" as Core <<Frame>> {
     }
 
     package "Ports" <<Rectangle>> {
-        interface UserServicePort << (S,SERVICE_COLOR) >> {
-            {abstract}
-            + registerUser(UserDTO userDTO)
-            + getUserById(Long id)
-        }
-        interface PetServicePort << (S,SERVICE_COLOR) >> {
-            {abstract}
-            + addPet(PetDTO petDTO)
-            + getPetById(Long id)
-        }
-        interface HealthServicePort << (S,SERVICE_COLOR) >> {
-            {abstract}
-            + addHealthRecord(HealthRecordDTO healthDTO)
-            + getHealthRecordsByPetId(Long petId)
+        package "In" <<Rectangle>> {
+            interface UserServicePort << (S,SERVICE_COLOR) >> {
+                {abstract}
+                + registerUser(UserDTO userDTO)
+                + getUserById(Long id)
+            }
+            interface PetServicePort << (S,SERVICE_COLOR) >> {
+                {abstract}
+                + addPet(PetDTO petDTO)
+                + getPetById(Long id)
+            }
+            interface HealthServicePort << (S,SERVICE_COLOR) >> {
+                {abstract}
+                + addHealthRecord(HealthRecordDTO healthDTO)
+                + getHealthRecordsByPetId(Long petId)
+            }
         }
 
-        interface UserRepositoryPort << (R,REPOSITORY_COLOR) >> {
-            {abstract}
-            + save(User user)
-            + findById(Long id): User
-        }
-        interface PetRepositoryPort << (R,REPOSITORY_COLOR) >> {
-            {abstract}
-            + save(Pet pet)
-            + findById(Long id): Pet
-        }
-        interface HealthRecordRepositoryPort << (R,REPOSITORY_COLOR) >> {
-            {abstract}
-            + save(HealthRecord record)
-            + findByPetId(Long petId): List<HealthRecord>
+        package "Out" <<Rectangle>> {
+            interface UserRepositoryPort << (R,REPOSITORY_COLOR) >> {
+                {abstract}
+                + save(User user)
+                + findById(Long id): User
+            }
+            interface PetRepositoryPort << (R,REPOSITORY_COLOR) >> {
+                {abstract}
+                + save(Pet pet)
+                + findById(Long id): Pet
+            }
+            interface HealthRecordRepositoryPort << (R,REPOSITORY_COLOR) >> {
+                {abstract}
+                + save(HealthRecord record)
+                + findByPetId(Long petId): List<HealthRecord>
+            }
         }
     }
 }
@@ -152,6 +157,12 @@ package "Infrastructure" as Infrastructure <<Frame>> {
 
     class GoogleMapsAdapter << (A,ADAPTER_COLOR) Adapter >> {
         + getLocation(String address): Coordinates
+    }
+
+    package "Config" <<Rectangle>> {
+        class SecurityConfig << (C,CONFIG_COLOR) Config >>
+        class DatabaseConfig << (C,CONFIG_COLOR) Config >>
+        class WebConfig << (C,CONFIG_COLOR) Config >>
     }
 }
 

@@ -70,9 +70,45 @@ Or if you are using Maven:
 Once the application is running, you can access it at http://localhost:8080.
 
 ## Project Structure
-- src/main/java/com/petcarehub/: Main application source files\
-- src/main/resources/: Application resources
-docs/uml/: UML diagrams representing the application architecture.
 
-### License
+This project follows the principles of Hexagonal Architecture (also known as Ports and Adapters Architecture). The goal of this architecture is to decouple the core business logic from the external systems, making the application more modular, testable, and adaptable to change.
+
+### Main Directories and Their Purpose:
+
+- **src/main/java/com/petcarehub/**: Main application source files.
+    - **core/**: Contains the core business logic of the application.
+        - **domain/**: Domain entities representing the core objects within the system.
+        - **ports/**: Interfaces that define the contracts for the application's use cases and data access.
+            - **in/**: Inbound ports, which define the operations available to the outside world.
+            - **out/**: Outbound ports, which define the contracts for external dependencies, such as databases or external APIs.
+        - **usecase/**: Specific use cases implementing business logic.
+    - **application/**: Implements the core business logic and use cases defined in the `core` module.
+        - **services/**: Service classes implementing the business logic.
+        - **dto/**: Data Transfer Objects used to pass data between layers.
+        - **mapper/**: Classes responsible for mapping entities to DTOs and vice versa.
+    - **infrastructure/**: Handles the interaction with external systems and frameworks.
+        - **repository/**: Implementations of the outbound ports, providing access to data storage.
+        - **adapter/**: Adapters for integrating with external services and APIs.
+        - **config/**: Configuration files for various aspects of the application.
+    - **web/**: Handles the presentation layer and communication with clients via REST APIs.
+        - **controller/**: REST controllers that handle HTTP requests and responses, delegating business logic to the service layer.
+
+- **src/main/resources/**: Application resources such as configuration files, SQL migration scripts, and static assets.
+    - **db/migration/**: Flyway migration scripts that manage database schema changes.
+
+- **docs/uml/**: UML diagrams representing the application architecture.
+    - **architecture-overview.puml**: Diagram showing the overall structure of the application following the Hexagonal Architecture.
+    - **use-case.puml**: Diagram depicting the main use cases of the application and their interaction with different layers.
+
+### Architectural Overview
+
+This project is designed using Hexagonal Architecture to ensure a clear separation of concerns:
+
+- **Core**: The core of the application contains the business logic and is independent of external frameworks or technologies. This makes it easier to test and maintain.
+- **Application**: This layer implements the business logic defined in the core and handles the orchestration of use cases.
+- **Infrastructure**: This layer deals with the implementation details, such as data storage and external API calls. It interacts with the core through well-defined interfaces (ports).
+- **Web**: The web layer is responsible for exposing the application's functionality through RESTful APIs, making it accessible to clients.
+
+
+## License
 This project is licensed under the MIT License. See the [LICENSE](./LICENSE) file for details.

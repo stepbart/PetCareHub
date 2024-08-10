@@ -73,5 +73,6 @@ Once the application is running, you can access it at http://localhost:8080.
 - src/main/java/com/petcarehub/: Main application source files\
 - src/main/resources/: Application resources
 docs/uml/: UML diagrams representing the application architecture.
-Contributing
-If you'd like to contribute, please fork the repository, create a new branch, and submit a pull request.
+
+### License
+This project is licensed under the MIT License. See the [LICENSE](./LICENSE) file for details.
